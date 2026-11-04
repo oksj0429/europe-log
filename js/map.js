@@ -1,19 +1,14 @@
 const panel = document.getElementById("panel");
 const map = L.map("map", { zoomControl: true }).setView([50, 12], 4);
 
-const TILES = {
-  light: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-};
-let tileLayer;
-function setTiles(theme) {
-  if (tileLayer) map.removeLayer(tileLayer);
-  tileLayer = L.tileLayer(TILES[theme] || TILES.light, {
-    attribution: "© OpenStreetMap © CARTO", maxZoom: 10
-  }).addTo(map);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "© OpenStreetMap contributors", maxZoom: 10
+}).addTo(map);
+
+// 국기: Windows는 국기 이모지가 글자로 보여서 이미지로 표시
+function flag(c) {
+  return '<img class="flag" src="https://flagcdn.com/24x18/' + c.id + '.png" alt="">';
 }
-setTiles(loadSafe("theme", "light"));
-window.onThemeChange = setTiles;
 
 const WEATHER = { 0: "맑음", 1: "대체로 맑음", 2: "구름 조금", 3: "흐림", 45: "안개", 48: "안개", 51: "이슬비", 53: "이슬비",
   55: "이슬비", 61: "비", 63: "비", 65: "강한 비", 71: "눈", 73: "눈", 75: "많은 눈", 80: "소나기", 95: "뇌우" };
@@ -23,7 +18,7 @@ let gIndex = 0;
 // 핀 생성
 countries.forEach(function (c) {
   const marker = L.marker([c.lat, c.lng]).addTo(map);
-  marker.bindTooltip(c.flag + " " + c.name);
+  marker.bindTooltip(c.name);
   marker.on("click", function () { showCountry(c); });
   c.marker = marker;
 });
@@ -31,7 +26,7 @@ countries.forEach(function (c) {
 function showHome() {
   let chips = "";
   countries.forEach(function (c) {
-    chips += '<button class="chip" data-id="' + c.id + '">' + c.flag + " " + c.name + "</button>";
+    chips += '<button class="chip" data-id="' + c.id + '">' + flag(c) + " " + c.name + "</button>";
   });
   panel.innerHTML =
     '<div class="hero"><h2>How was the Europe so far?</h2>' +
@@ -53,7 +48,7 @@ function showCountry(c) {
   gIndex = 0;
   panel.innerHTML =
     '<button class="btn" id="backBtn" type="button">← 목록</button>' +
-    '<div class="info"><h2 style="margin-top:16px">' + c.flag + " " + c.name + "</h2>" +
+    '<div class="info"><h2 style="margin-top:16px">' + flag(c) + " " + c.name + "</h2>" +
     '<p class="sub">' + c.period + "</p><p>" + c.summary + "</p>" +
     '<div class="label">사진</div><div class="gallery" id="gallery"></div>' +
     '<div class="label">영상</div><div class="video" id="video"></div>' +

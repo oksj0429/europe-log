@@ -3,7 +3,7 @@ const serr = document.getElementById("signupErr");
 const box = document.getElementById("interests");
 countries.forEach(function (c) {
   const label = document.createElement("label");
-  label.innerHTML = '<input type="checkbox" name="interest" value="' + c.name + '"> ' + c.flag + " " + c.name;
+  label.innerHTML = '<input type="checkbox" name="interest" value="' + c.name + '"> ' + c.name;
   box.appendChild(label);
 });
 
