@@ -49,7 +49,7 @@ function showCountry(c) {
   panel.innerHTML =
     '<button class="btn" id="backBtn" type="button">← 목록</button>' +
     '<div class="info"><h2 style="margin-top:16px">' + flag(c) + " " + c.name + "</h2>" +
-    '<p class="sub">' + c.period + "</p><p>" + c.summary + "</p>" +
+    (c.cities ? '<p class="sub">방문: ' + c.cities + "</p>" : "") + "<p>" + c.summary + "</p>" +
     '<div class="label">사진</div><div class="gallery" id="gallery"></div>' +
     '<div class="label">영상</div><div class="video" id="video"></div>' +
     '<div class="label">현재 날씨</div><div class="weather" id="weather">불러오는 중...</div></div>';
