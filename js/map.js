@@ -15,6 +15,13 @@ const WEATHER = { 0: "맑음", 1: "대체로 맑음", 2: "구름 조금", 3: "�
 
 let gIndex = 0;
 
+// 구글맵 임베드용 검색어 (API 키 없이 iframe으로 넣는 방식)
+const MAP_QUERY = {
+  de: "Bavaria, Germany", is: "Iceland", hr: "Dubrovnik, Croatia", ch: "Zermatt, Switzerland",
+  fr: "Nice, France", mc: "Monaco", it: "Italy", at: "Vienna, Austria",
+  hu: "Budapest, Hungary", pt: "Porto, Portugal", gb: "London, UK", es: "Spain"
+};
+
 // 핀 생성
 countries.forEach(function (c) {
   const marker = L.marker([c.lat, c.lng]).addTo(map);
@@ -52,10 +59,12 @@ function showCountry(c) {
     (c.cities ? '<p class="sub">방문: ' + c.cities + "</p>" : "") + "<p>" + c.summary + "</p>" +
     '<div class="label">사진</div><div class="gallery" id="gallery"></div>' +
     '<div class="label">영상</div><div class="video" id="video"></div>' +
+    '<div class="label">구글 지도</div><div class="gmap" id="gmap"></div>' +
     '<div class="label">현재 날씨</div><div class="weather" id="weather">불러오는 중...</div></div>';
   document.getElementById("backBtn").addEventListener("click", showHome);
   renderGallery(c);
   renderVideo(c);
+  renderGoogleMap(c);
   loadWeather(c);
 }
 
@@ -78,6 +87,13 @@ function renderVideo(c) {
   const v = document.getElementById("video");
   if (!c.video) { v.innerText = "영상을 준비 중입니다."; return; }
   v.innerHTML = '<iframe src="https://www.youtube.com/embed/' + c.video + '" allowfullscreen></iframe>';
+}
+
+// 구글맵 임베드: 키 없이 iframe의 src에 검색어를 넣어 지도 표시
+function renderGoogleMap(c) {
+  const box = document.getElementById("gmap");
+  const q = encodeURIComponent(MAP_QUERY[c.id] || c.name);
+  box.innerHTML = '<iframe src="https://maps.google.com/maps?q=' + q + '&z=8&output=embed" loading="lazy" title="' + c.name + ' 구글 지도"></iframe>';
 }
 
 // 외부 API(Open-Meteo): fetch + JSON
