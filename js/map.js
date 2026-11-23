@@ -13,7 +13,6 @@ function flag(c) {
 const WEATHER = { 0: "맑음", 1: "대체로 맑음", 2: "구름 조금", 3: "흐림", 45: "안개", 48: "안개", 51: "이슬비", 53: "이슬비",
   55: "이슬비", 61: "비", 63: "비", 65: "강한 비", 71: "눈", 73: "눈", 75: "많은 눈", 80: "소나기", 95: "뇌우" };
 
-let gIndex = 0;
 
 // 구글맵 임베드용 검색어 (API 키 없이 iframe으로 넣는 방식)
 const MAP_QUERY = {
@@ -52,41 +51,47 @@ function showHome() {
 function showCountry(c) {
   map.flyTo([c.lat, c.lng], 5, { duration: 0.8 });
   saveSafe("lastCountry", c.id);
-  gIndex = 0;
   panel.innerHTML =
     '<button class="btn" id="backBtn" type="button">← 목록</button>' +
     '<div class="info"><h2 style="margin-top:16px">' + flag(c) + " " + c.name + "</h2>" +
+    photoHtml(c) +
     (c.cities ? '<p class="sub">방문: ' + c.cities + "</p>" : "") + "<p>" + c.summary + "</p>" +
-    '<div class="label">사진</div><div class="gallery" id="gallery"></div>' +
     '<div class="label">영상</div><div class="video" id="video"></div>' +
     '<div class="label">구글 지도</div><div class="gmap" id="gmap"></div>' +
-    '<div class="label">현재 날씨</div><div class="weather" id="weather">불러오는 중...</div></div>';
+    '<div class="label">현재 날씨</div><div class="weather" id="weather">불러오는 중...</div>' +
+    '<div class="label">댓글</div><div id="comments"></div></div>';
   document.getElementById("backBtn").addEventListener("click", showHome);
-  renderGallery(c);
   renderVideo(c);
   renderGoogleMap(c);
   loadWeather(c);
+  renderComments(c);
 }
 
-function renderGallery(c) {
-  const g = document.getElementById("gallery");
-  if (c.photos.length === 0) { g.innerText = "사진을 준비 중입니다."; return; }
-  const img = document.createElement("img");
-  const prev = document.createElement("button");
-  const next = document.createElement("button");
-  prev.className = "g-btn prev"; prev.innerText = "‹";
-  next.className = "g-btn next"; next.innerText = "›";
-  function update() { img.src = "images/" + c.photos[gIndex]; }
-  prev.addEventListener("click", function () { gIndex = (gIndex - 1 + c.photos.length) % c.photos.length; update(); });
-  next.addEventListener("click", function () { gIndex = (gIndex + 1) % c.photos.length; update(); });
-  g.appendChild(img); g.appendChild(prev); g.appendChild(next);
-  update();
+// 대표 사진 (Unsplash 무료 사진, 사진작가와 출처 표시)
+function photoHtml(c) {
+  if (!c.photo) return "";
+  const p = c.photo;
+  return '<figure class="hero"><img src="' + p.url + '" alt="' + p.caption + '" loading="lazy">' +
+    '<figcaption>' + p.caption + ' · Photo by <a href="' + p.authorLink + '" target="_blank" rel="noopener">' + p.author +
+    '</a> on <a href="' + p.source + '" target="_blank" rel="noopener">Unsplash</a></figcaption></figure>';
 }
 
+// 영상: 인스타그램 게시물/릴스 주소 또는 YouTube ID. 여러 개면 배열로 적기
+function videoFrame(v) {
+  const insta = v.match(/instagram\.com\/(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
+  if (insta) {
+    const type = insta[1] === "reels" ? "reel" : insta[1];
+    return '<iframe class="insta" src="https://www.instagram.com/' + type + "/" + insta[2] + '/embed" allowfullscreen loading="lazy"></iframe>';
+  }
+  return '<iframe src="https://www.youtube.com/embed/' + v + '" allowfullscreen loading="lazy"></iframe>';
+}
 function renderVideo(c) {
   const v = document.getElementById("video");
-  if (!c.video) { v.innerText = "영상을 준비 중입니다."; return; }
-  v.innerHTML = '<iframe src="https://www.youtube.com/embed/' + c.video + '" allowfullscreen></iframe>';
+  const list = Array.isArray(c.video) ? c.video : (c.video ? [c.video] : []);
+  if (list.length === 0) { v.innerText = "영상을 준비 중입니다."; return; }
+  const isInsta = list.some(function (x) { return x.indexOf("instagram.com") !== -1; });
+  if (isInsta) v.classList.add("has-insta");
+  v.innerHTML = list.map(videoFrame).join("");
 }
 
 // 구글맵 임베드: 키 없이 iframe의 src에 검색어를 넣어 지도 표시
