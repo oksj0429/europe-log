@@ -1,7 +1,7 @@
 // 공통: 상단 메뉴, 다크모드, 로그인 표시
 const PAGES = [
   ["index.html", "홈"], ["timeline.html", "타임라인"], ["guide.html", "가이드"],
-  ["about.html", "소개·후기"], ["board.html", "자유게시판"], ["signup.html", "회원가입"]
+  ["about.html", "소개·후기"], ["board.html", "커뮤니티"], ["signup.html", "회원가입"]
 ];
 function loadSafe(key, fallback) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }

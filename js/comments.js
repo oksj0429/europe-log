@@ -1,69 +1,57 @@
-// 나라별 댓글
-// 지금은 브라우저(localStorage)에 저장하고, 나중에 Node.js 서버로 바꿀 때
-// 아래 두 함수(getComments, addComment, deleteComment)만 fetch로 바꾸면 되도록 Promise로 만듦
-const CommentStore = {
-  getComments: function (countryId) {
-    return Promise.resolve(loadSafe("comments_" + countryId, []));
-  },
-  addComment: function (countryId, comment) {
-    const list = loadSafe("comments_" + countryId, []);
-    list.push(comment);
-    saveSafe("comments_" + countryId, list);
-    return Promise.resolve(list);
-  },
-  deleteComment: function (countryId, commentId) {
-    const list = loadSafe("comments_" + countryId, []).filter(function (x) { return x.id !== commentId; });
-    saveSafe("comments_" + countryId, list);
-    return Promise.resolve(list);
-  }
-};
-
+// 나라별 댓글 (커뮤니티 서버에 저장되어 모든 방문자가 함께 봄)
 function renderComments(c) {
   const box = document.getElementById("comments");
-  const user = loadSafe("currentUser", null);
   box.innerHTML =
     '<form class="c-form" id="cForm">' +
-    '<input type="text" id="cNick" maxlength="12" placeholder="닉네임">' +
-    '<textarea id="cText" rows="2" maxlength="200" placeholder="' + c.name + '에 대한 경험이나 질문을 남겨주세요."></textarea>' +
+    '<div class="row2"><input type="text" id="cNick" maxlength="12" placeholder="닉네임">' +
+    '<input type="password" id="cPw" maxlength="30" placeholder="삭제용 비밀번호 (4자 이상)"></div>' +
+    '<textarea id="cText" rows="2" maxlength="300" placeholder="' + c.name + '에 대한 경험이나 질문을 남겨주세요."></textarea>' +
     '<div class="err" id="cErr"></div>' +
     '<button class="btn primary" type="submit">댓글 등록</button></form>' +
-    '<div id="cList"></div>';
+    '<div id="cList"><p class="sub">댓글을 불러오는 중...</p></div>';
+  const user = loadSafe("currentUser", null);
   if (user) document.getElementById("cNick").value = user.id;
 
+  function load() {
+    api("/api/countries/" + c.id + "/comments").then(draw).catch(function (e) {
+      const el2 = document.getElementById("cList");
+      if (el2) el2.innerHTML = '<p class="sub">' + e.message + "</p>";
+    });
+  }
+
   function draw(list) {
-    const el = document.getElementById("cList");
-    if (!el) return;            // 다른 나라로 이동한 경우
-    el.innerHTML = "";
-    if (list.length === 0) { el.innerHTML = '<p class="sub">첫 댓글을 남겨보세요.</p>'; return; }
-    list.slice().reverse().forEach(function (cm) {
-      const item = document.createElement("div");
-      item.className = "comment";
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      const who = document.createElement("span");
-      who.innerText = cm.nick + " · " + cm.date;
-      const del = document.createElement("button");
-      del.className = "link-btn"; del.type = "button"; del.innerText = "삭제";
-      del.addEventListener("click", function () { CommentStore.deleteComment(c.id, cm.id).then(draw); });
-      meta.appendChild(who); meta.appendChild(del);
-      const body = document.createElement("p");
-      body.innerText = cm.text;   // 입력값을 태그로 해석하지 않음
-      item.appendChild(meta); item.appendChild(body);
-      el.appendChild(item);
+    const wrap = document.getElementById("cList");
+    if (!wrap) return;                         // 다른 나라로 이동한 경우
+    wrap.innerHTML = "";
+    if (list.length === 0) { wrap.appendChild(el("p", "sub", "첫 댓글을 남겨보세요.")); return; }
+    list.forEach(function (cm) {
+      const item = el("div", "comment");
+      const meta = el("div", "meta");
+      meta.appendChild(el("span", "", cm.nick + " · " + fmtDate(cm.created_at)));
+      const right = el("span", "actions");
+      right.appendChild(likeButton("comment", cm));
+      right.appendChild(deleteButton("comment", cm, load));
+      meta.appendChild(right);
+      item.appendChild(meta);
+      item.appendChild(el("p", "", cm.text));
+      wrap.appendChild(item);
     });
   }
 
   document.getElementById("cForm").addEventListener("submit", function (e) {
     e.preventDefault();
-    const nick = document.getElementById("cNick").value.trim();
-    const text = document.getElementById("cText").value.trim();
     const err = document.getElementById("cErr");
-    if (nick === "" || text === "") { err.innerText = "닉네임과 내용을 입력해주세요."; return; }
+    const body = {
+      nick: document.getElementById("cNick").value,
+      password: document.getElementById("cPw").value,
+      text: document.getElementById("cText").value
+    };
     err.innerText = "";
-    const comment = { id: Date.now(), nick: nick, text: text, date: new Date().toLocaleDateString("ko-KR") };
-    CommentStore.addComment(c.id, comment).then(draw);
-    document.getElementById("cText").value = "";
+    api("/api/countries/" + c.id + "/comments", { method: "POST", body: body }).then(function () {
+      document.getElementById("cText").value = "";
+      load();
+    }).catch(function (e2) { err.innerText = e2.message; });
   });
 
-  CommentStore.getComments(c.id).then(draw);
+  load();
 }

@@ -3,24 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>자유게시판 | 유럽, 지나온 길</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>커뮤니티 | 유럽, 지나온 길</title>
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
   <main class="page">
-    <h1>자유게시판</h1>
-    <p class="sub">교환학생에 대한 질문이나 이야기를 남겨주세요. 글은 이 브라우저에만 저장됩니다.</p>
-    <form class="box" id="boardForm">
-      <label for="nick">닉네임</label>
-      <input type="text" id="nick" maxlength="12">
-      <label for="content">내용</label>
-      <textarea id="content" rows="4" maxlength="300"></textarea>
-      <div class="err" id="boardErr"></div>
-      <button class="btn primary" type="submit">등록</button>
-    </form>
-    <div id="posts"></div>
+    <h1>커뮤니티</h1>
+    <p class="sub">교환학생과 유럽 여행에 대해 묻고 답하고, 함께 여행할 동행을 찾아보세요.</p>
+    <p class="notice" id="localNotice">지금은 서버 연결 전이라 글이 이 브라우저에만 저장돼요.</p>
+
+    <div class="tabs">
+      <button type="button" class="tab active" data-kind="qna">Q&amp;A</button>
+      <button type="button" class="tab" data-kind="companion">동행 구하기</button>
+    </div>
+
+    <!-- 목록 화면 -->
+    <section id="listView">
+      <div class="toolbar">
+        <select id="fCountry"><option value="">모든 나라</option></select>
+        <select id="fTopic"><option value="">모든 주제</option></select>
+        <select id="fSort"><option value="new">최신순</option><option value="likes">좋아요순</option></select>
+        <button class="btn primary" type="button" id="writeBtn">글쓰기</button>
+      </div>
+
+      <form class="box" id="writeForm" hidden>
+        <div class="row2">
+          <div><label for="wNick">닉네임</label><input type="text" id="wNick" maxlength="12"></div>
+          <div><label for="wPw">삭제용 비밀번호 (4자 이상)</label><input type="password" id="wPw" maxlength="30"></div>
+        </div>
+        <div class="row2">
+          <div><label for="wCountry">나라</label><select id="wCountry"></select></div>
+          <div class="qna-only"><label for="wTopic">주제</label><select id="wTopic"></select></div>
+          <div class="comp-only"><label for="wCity">도시</label><input type="text" id="wCity" maxlength="30" placeholder="예: 뮌헨"></div>
+        </div>
+        <div class="row2 comp-only">
+          <div><label for="wStart">시작 날짜</label><input type="date" id="wStart"></div>
+          <div><label for="wEnd">끝 날짜</label><input type="date" id="wEnd"></div>
+        </div>
+        <label for="wTitle">제목</label>
+        <input type="text" id="wTitle" maxlength="60">
+        <label for="wBody">내용</label>
+        <textarea id="wBody" rows="5" maxlength="2000"></textarea>
+        <p class="notice comp-only">안전을 위해 전화번호, 이메일, 메신저 아이디는 쓸 수 없어요. 댓글로 대화해주세요.</p>
+        <div class="err" id="wErr"></div>
+        <button class="btn primary" type="submit">등록</button>
+      </form>
+
+      <div id="postList"></div>
+    </section>
+
+    <!-- 글 보기 화면 -->
+    <section id="detailView" hidden></section>
   </main>
-  <script src="js/common.js"></script>
-  <script src="js/board.js"></script>
+  <script src="js/common.js?v=6"></script>
+  <script src="js/data.js?v=6"></script>
+  <script src="js/api.js?v=6"></script>
+  <script src="js/board.js?v=6"></script>
 </body>
 </html>
