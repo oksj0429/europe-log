@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>자유게시판 | 유럽, 지나온 길</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="page">
+    <h1>자유게시판</h1>
+    <p class="sub">교환학생에 대한 질문이나 이야기를 남겨주세요. 글은 이 브라우저에만 저장됩니다.</p>
+    <form class="box" id="boardForm">
+      <label for="nick">닉네임</label>
+      <input type="text" id="nick" maxlength="12">
+      <label for="content">내용</label>
+      <textarea id="content" rows="4" maxlength="300"></textarea>
+      <div class="err" id="boardErr"></div>
+      <button class="btn primary" type="submit">등록</button>
+    </form>
+    <div id="posts"></div>
+  </main>
+  <script src="js/common.js"></script>
+  <script src="js/board.js"></script>
+</body>
+</html>
